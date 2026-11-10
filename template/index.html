@@ -1,0 +1,368 @@
+
+{% extends "base.html" %}
+
+{% block title %}Student Feedback Form | InsightFlow{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <h1>Student Feedback Form</h1>
+    <p>Your feedback helps us improve teaching and learning.</p>
+</section>
+
+<form action="{{ url_for('submit') }}" method="POST"
+      class="panel feedback-form" id="feedbackForm">
+
+    <h2>Student Details</h2>
+
+    <div class="form-grid">
+
+        <label>Student Name
+            <input
+                type="text"
+                name="student_name"
+                maxlength="100"
+                placeholder="Enter your full name"
+                required
+            >
+        </label>
+
+        <label>Roll Number
+            <input
+                type="text"
+                name="roll_number"
+                maxlength="30"
+                placeholder="Enter your roll number"
+                required
+            >
+        </label>
+
+        <label>Department
+            <select name="department" id="department" required>
+                <option value="">Select department</option>
+                <option value="CSE">CSE</option>
+                <option value="IT">IT</option>
+                <option value="ECE">ECE</option>
+                <option value="EEE">EEE</option>
+            </select>
+        </label>
+
+        <label>Year of Study
+            <select name="year" required>
+                <option value="">Select year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+        </label>
+
+        <label>Subject
+            <select name="subject" id="subject" required disabled>
+                <option value="">Select department first</option>
+            </select>
+        </label>
+
+        <label>Faculty Name
+            <select name="faculty" id="faculty" required disabled>
+                <option value="">Select subject first</option>
+            </select>
+        </label>
+
+    </div>
+
+    <h2>Rate Your Experience</h2>
+
+    <p class="hint">
+        1 = Poor, 2 = Fair, 3 = Average, 4 = Good, 5 = Excellent
+    </p>
+
+    {% set questions = [
+        ('teaching', 'Teaching Quality'),
+        ('clarity', 'Subject Understanding'),
+        ('interaction', 'Faculty Interaction'),
+        ('punctuality', 'Faculty Punctuality'),
+        ('facilities', 'Classroom Facilities')
+    ] %}
+
+    {% for field, question in questions %}
+
+        <fieldset class="rating-group">
+
+            <legend>{{ question }}</legend>
+
+            <div class="rating-options">
+
+                {% for value in range(1, 6) %}
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="{{ field }}"
+                            value="{{ value }}"
+                            required
+                        >
+                        <span>{{ value }}</span>
+                    </label>
+
+                {% endfor %}
+
+            </div>
+
+        </fieldset>
+
+    {% endfor %}
+
+    <div class="comments-section">
+
+        <label for="comments">Additional Comments</label>
+
+        <textarea
+            id="comments"
+            name="comments"
+            rows="5"
+            maxlength="2000"
+            placeholder="Share your experience or suggestions..."
+        ></textarea>
+
+    </div>
+
+    <div class="submit-section">
+
+        <button type="submit" class="button">
+            Submit Feedback
+        </button>
+
+    </div>
+
+</form>
+
+
+<script>
+
+// Department, subject and faculty details
+
+const departmentData = {
+
+    "CSE": {
+        "Data Structures and Algorithms": [
+            "Dr. Ananya Rao",
+            "Mr. Kiran Kumar",
+            "Ms. Divya"
+        ],
+
+        "Java Programming": [
+            "Mr. Rahul Reddy",
+            "Ms. Priya Sharma"
+        ],
+
+        "Python Programming": [
+            "Mr. Arjun Kumar",
+            "Ms. Swathi",
+            "Mr. Naveen"
+        ],
+
+        "Database Management Systems": [
+            "Ms. Kavitha",
+            "Mr. Suresh",
+            "Dr. Meena"
+        ],
+
+        "Operating Systems": [
+            "Mr. Vamsi",
+            "Ms. Lakshmi"
+        ],
+
+        "Computer Networks": [
+            "Mr. Karthik",
+            "Ms. Sneha"
+        ]
+    },
+
+    "ECE": {
+        "Digital Electronics": [
+            "Mr. Suresh Kumar",
+            "Ms. Kavitha"
+        ],
+
+        "Signals and Systems": [
+            "Dr. Meena Rao",
+            "Mr. Naveen"
+        ],
+
+        "Analog Electronic Circuits": [
+            "Ms. Swathi",
+            "Mr. Ramesh"
+        ],
+
+        "Communication Systems": [
+            "Mr. Arjun",
+            "Ms. Divya"
+        ],
+
+        "Electronic Devices": [
+            "Dr. Prasad",
+            "Ms. Priya"
+        ]
+    },
+
+    "EEE": {
+        "Electrical Circuit Analysis": [
+            "Mr. Ramesh",
+            "Ms. Lakshmi"
+        ],
+
+        "Electrical Machines": [
+            "Dr. Prasad",
+            "Mr. Vamsi"
+        ],
+
+        "Power Systems": [
+            "Ms. Harika",
+            "Mr. Kiran"
+        ],
+
+        "Control Systems": [
+            "Mr. Naveen",
+            "Ms. Kavitha"
+        ],
+
+        "Power Electronics": [
+            "Dr. Meena",
+            "Mr. Suresh"
+        ]
+    },
+
+    "IT": {
+        "Web Technologies": [
+            "Mr. Abhishek",
+            "Ms. Sneha"
+        ],
+
+        "Computer Networks": [
+            "Mr. Karthik",
+            "Mr. Rahul"
+        ],
+
+        "Software Engineering": [
+            "Dr. Sanjay",
+            "Ms. Pooja"
+        ],
+
+        "Cloud Computing": [
+            "Mr. Arjun",
+            "Ms. Swathi"
+        ],
+
+        "Data Analytics": [
+            "Ms. Priya",
+            "Mr. Naveen"
+        ]
+    }
+
+};
+
+
+// Get dropdown elements
+
+const departmentSelect =
+    document.getElementById("department");
+
+const subjectSelect =
+    document.getElementById("subject");
+
+const facultySelect =
+    document.getElementById("faculty");
+
+
+// Reset dropdown options
+
+function resetDropdown(dropdown, message) {
+
+    dropdown.innerHTML = "";
+
+    const option = document.createElement("option");
+
+    option.value = "";
+    option.textContent = message;
+
+    dropdown.appendChild(option);
+
+}
+
+
+// When department is selected
+
+departmentSelect.addEventListener("change", function () {
+
+    const department = this.value;
+
+    resetDropdown(subjectSelect, "Select subject");
+
+    resetDropdown(facultySelect, "Select subject first");
+
+    subjectSelect.disabled = true;
+    facultySelect.disabled = true;
+
+    if (departmentData[department]) {
+
+        const subjects = departmentData[department];
+
+        Object.keys(subjects).forEach(function (subject) {
+
+            const option = document.createElement("option");
+
+            option.value = subject;
+            option.textContent = subject;
+
+            subjectSelect.appendChild(option);
+
+        });
+
+        subjectSelect.disabled = false;
+
+    }
+
+});
+
+
+// When subject is selected
+
+subjectSelect.addEventListener("change", function () {
+
+    const department = departmentSelect.value;
+
+    const subject = this.value;
+
+    resetDropdown(facultySelect, "Select faculty");
+
+    facultySelect.disabled = true;
+
+    if (
+        departmentData[department] &&
+        departmentData[department][subject]
+    ) {
+
+        const facultyMembers =
+            departmentData[department][subject];
+
+        facultyMembers.forEach(function (faculty) {
+
+            const option = document.createElement("option");
+
+            option.value = faculty;
+            option.textContent = faculty;
+
+            facultySelect.appendChild(option);
+
+        });
+
+        facultySelect.disabled = false;
+
+    }
+
+});
+
+</script>
+
+{% endblock %}
